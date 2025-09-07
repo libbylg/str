@@ -6207,7 +6207,7 @@ public:
     using value_type = T;
     using iterator = value_type*;
 
-    argv_view(size_type argc, value_type argv[])
+    explicit argv_view(size_type argc, value_type argv[])
         : argc_{argc}
         , argv_{argv} {
         if ((argc_ < 0) || (argv_ == nullptr)) [[unlikely]] {
@@ -6238,19 +6238,19 @@ private:
 };
 
 auto str::next_opt1(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>> {
-    return next_opt1(next_index, argv_view{argc, argv});
+    return next_opt1(next_index, argv_view<const char*, int>{argc, argv});
 }
 
 auto str::next_opt1(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>> {
-    return next_opt1(next_index, argv_view{argc, argv});
+    return next_opt1(next_index, argv_view<char*, int>{argc, argv});
 }
 
 auto str::next_opt2(int& next_index, int argc, const char* argv[]) -> std::optional<pair<std::string_view>> {
-    return next_opt2(next_index, argv_view{argc, argv});
+    return next_opt2(next_index, argv_view<const char*, int>{argc, argv});
 }
 
 auto str::next_opt2(int& next_index, int argc, char* argv[]) -> std::optional<pair<std::string_view>> {
-    return next_opt2(next_index, argv_view{argc, argv});
+    return next_opt2(next_index, argv_view<char*, int>{argc, argv});
 }
 
 auto str::accept_until(std::string_view s, size_type& pos, value_type guard_ch) -> std::optional<range_type> {
