@@ -20,8 +20,7 @@
 #include <fstream>
 
 #if defined(WIZSTR_NAMESPACE)
-namespace
-WIZSTR_NAMESPACE {
+namespace WIZSTR_NAMESPACE {
 #endif
 
 auto str::append(std::string_view s, std::string_view other, size_type times_n) -> std::string {
@@ -2979,11 +2978,11 @@ auto str::random_reorder(std::string& s, const number_provider_proc& proc) -> st
 
 auto str::spaces(uint8_t width) -> std::string_view {
     // --0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-    static constexpr value_type spaces_cache[256] =                            //
-            "                                                                " //
-            "                                                                " //
-            "                                                                " //
-            "                                                               "  //
+    static constexpr value_type spaces_cache[256] =                        //
+        "                                                                " //
+        "                                                                " //
+        "                                                                " //
+        "                                                               "  //
         ;
     // width 的取值范围是 0-255,
     return std::string_view{spaces_cache + (sizeof(spaces_cache) - 1) - width, width};
@@ -3296,18 +3295,16 @@ auto str::split(std::string_view s, std::string_view sep_str, size_type max_n, c
         return;
     }
 
-    split(s, //
+    split(s,                                                            //
         [sep_str](std::string_view s, size_type& pos) -> size_type {
             //
             size_type start = s.find(sep_str, pos);
             pos = (start == std::string_view::npos) ? s.size() : (start + sep_str.size());
-            return start;
-        },     //
-        max_n, //
+            return start; }, //
+        max_n,                                                          //
         [s, &proc](range_type range) -> int {
             //
-            return proc(s.substr(range.pos, range.len));
-        });
+            return proc(s.substr(range.pos, range.len)); });
 }
 
 auto str::split(std::string_view s, std::string_view sep_str, const view_consumer_proc& proc) -> void {
@@ -5290,8 +5287,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    }
-                    break;
+                    } break;
                     case 'X':
                         [[fallthrough]];
                     case 'x': {
@@ -5329,8 +5325,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
 
                         ch = static_cast<decltype(ch)>(val);
                         ptr = sp;
-                    }
-                    break;
+                    } break;
                     default:
                         return static_cast<size_type>(reinterpret_cast<const_pointer>(ptr) - s.data());
                 }
@@ -5340,8 +5335,7 @@ auto str::decode_cstr(std::string_view s, const view_consumer_proc& proc) -> siz
                 }
 
                 w = ptr;
-            }
-            break;
+            } break;
 
             case 'A' ... 'Z':
                 [[fallthrough]];
@@ -6344,7 +6338,7 @@ auto str::accept_until(std::string_view s, size_type& pos, const std::regex& sep
     }
 
     auto end = pos + static_cast<size_type>(match.position(0));
-    auto result = range_type{pos, static_cast<size_type>(end - pos)}; //static_cast<size_type>(match.length(0))
+    auto result = range_type{pos, static_cast<size_type>(end - pos)}; // static_cast<size_type>(match.length(0))
     pos = end + match.length(0);
     return result;
 }
@@ -6500,7 +6494,6 @@ auto str::skip_max(std::string_view s, size_type& pos, size_type max_n) -> std::
     return max_n;
 }
 
-
 #ifdef STR_UNTESTED
 auto str::grouping(std::string_view s, const char_match_proc& proc) -> std::tuple<std::string, std::string> {
     std::string matched;
@@ -6600,20 +6593,20 @@ auto str::mapping(std::string_view s, const char_mapping_proc& proc) -> std::str
 
 auto str::mapping_inplace(std::string& s, std::string_view match_charset,
     std::string_view replace_charset) -> std::string& {
-        if (match_charset.empty() || replace_charset.empty()) {
-            return s;
-        }
-
-        value_type maptable[256]{'\0'};
-        for (size_type index = 0; index < std::min(match_charset.size(), replace_charset.size()); ++index) {
-            maptable[static_cast<std::make_unsigned_t<value_type>>(match_charset[index])] = replace_charset[index];
-        }
-
-        return mapping_inplace(s, [maptable](value_type ch) -> value_type {
-            auto index = static_cast<std::make_unsigned_t<value_type>>(ch);
-            return (maptable[index] != '\0') ? maptable[index] : ch;
-        });
+    if (match_charset.empty() || replace_charset.empty()) {
+        return s;
     }
+
+    value_type maptable[256]{'\0'};
+    for (size_type index = 0; index < std::min(match_charset.size(), replace_charset.size()); ++index) {
+        maptable[static_cast<std::make_unsigned_t<value_type>>(match_charset[index])] = replace_charset[index];
+    }
+
+    return mapping_inplace(s, [maptable](value_type ch) -> value_type {
+        auto index = static_cast<std::make_unsigned_t<value_type>>(ch);
+        return (maptable[index] != '\0') ? maptable[index] : ch;
+    });
+}
 
 auto str::mapping_inplace(std::string& s, const char_mapping_proc& proc) -> std::string& {
     for (pointer ptr = s.data(); ptr < (s.data() + s.size()); ++ptr) {
@@ -6756,6 +6749,43 @@ auto str::home() -> std::string {
 #endif
 
     return ((ptr_home == nullptr) ? "" : ptr_home);
+}
+
+auto str::replace_all(std::string_view s, std::string_view search, std::string_view substitute, const view_consumer_proc& proc) -> void {
+    size_type start = 0;
+    for (size_type pos = 0; pos < s.size(); start = pos) {
+        auto range = str::next_string_range(s, pos, search);
+        if (!range) {
+            break;
+        }
+
+        auto prefix = str::interval(start, range->begin());
+        if (!prefix.empty()) {
+            if (proc(str::take_view(s, prefix)) != 0) {
+                return;
+            }
+        }
+
+        if (proc(substitute) != 0) {
+            return;
+        }
+    }
+
+    if (start < s.size()) {
+        proc(str::take_view(s, start));
+    }
+}
+
+auto str::replace_all(std::string_view s, std::string_view search, std::string_view substitute) -> std::string {
+    std::string result;
+    result.reserve(s.size());
+    str::replace_all(s, search, substitute, [&result](std::string_view item) -> int {
+        if (!item.empty()) {
+            result.append(item);
+        }
+        return 0;
+    });
+    return result;
 }
 
 #if defined(WIZSTR_NAMESPACE)

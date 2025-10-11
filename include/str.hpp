@@ -1521,6 +1521,11 @@ struct str {
     /// @block home
     static auto home() -> std::string;
     /// @end home
+
+    /// @block replace_all
+    static auto replace_all(std::string_view s, std::string_view substr, std::string_view substitute, const view_consumer_proc& proc) -> void;
+    static auto replace_all(std::string_view s, std::string_view substr, std::string_view substitute) -> std::string;
+    /// @end replace_all
 };
 
 template <typename Sequence, typename>
